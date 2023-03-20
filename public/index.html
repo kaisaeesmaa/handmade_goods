@@ -25,108 +25,107 @@
 <body>
 
 <div id="app">
-<!-- Page content-->
-<div class="container">
-    <div class="text-center mt-5">
-        <h1>Handmade goods marketplace</h1>
-        <p class="lead">This a simple online marketplace for handmade goods</p>
+    <!-- Page content-->
+    <div class="container">
+        <div class="text-center mt-5">
+            <h1>Handmade goods marketplace</h1>
+            <p class="lead">This a simple online marketplace for handmade goods</p>
 
-        <div class="row">
+            <div class="row">
 
-            <!-- Button trigger modal -->
-            <button type="button" class="btn btn-primary" data-bs-toggle="modal" @click="showRegisterModal">
-                Register
-            </button>
-    </div>
-</div>
-
-
+                <!-- Button trigger modal -->
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" @click="showRegisterModal">
+                    Register
+                </button>
+            </div>
+        </div>
 
 
-    <!-- Modal -->
-    <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel" aria-hidden="true">
-        <div class="modal-dialog">
-            <div class="modal-content">
-                <div class="modal-header">
-                    <h1 class="modal-title fs-5" id="registerModalLabel">Register</h1>
-                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                </div>
-                <div class="modal-body">
-                    <div class="mb-3 row">
-                        <label for="Email" class="col-sm-2 col-form-label">Email</label>
-                        <div class="col-sm-10">
-                            <input type="text" class="form-control" id="Email" v-model="registerEmail">
+        <!-- Modal -->
+        <div class="modal fade" id="registerModal" tabindex="-1" aria-labelledby="registerModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="registerModalLabel">Register</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3 row">
+                            <label for="Email" class="col-sm-2 col-form-label">Email</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="Email" v-model="registerEmail">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
+                            <div class="col-sm-10">
+                                <input type="password" class="form-control" id="inputPassword"
+                                       v-model="registerPassword">
+                            </div>
                         </div>
                     </div>
-                    <div class="mb-3 row">
-                        <label for="inputPassword" class="col-sm-2 col-form-label">Password</label>
-                        <div class="col-sm-10">
-                            <input type="password" class="form-control" id="inputPassword" v-model="registerPassword">
-                        </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" @click="register">Register</button>
                     </div>
-                </div>
-                <div class="modal-footer">
-                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                    <button type="button" class="btn btn-primary" @click="register">Register</button>
                 </div>
             </div>
         </div>
     </div>
 </div>
-</div>
 <!-- Bootstrap core JS-->
-        <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
+<script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
 
+<script>
+    const {createApp} = Vue
 
-        <script>
-            const { createApp } = Vue
+    createApp({
+        data() {
+            return {
+                modalHandler: null,
+                registerEmail: null,
+                registerPassword: null
+            }
+        },
 
-            createApp({
-                data() {
-                    return {
-                        modalHandler: null,
-                        registerEmail : null,
-                        registerPassword: null
-                    }
-                },
+        methods: {
+            showRegisterModal: function () {
+                this.modalHandler = new bootstrap.Modal(document.getElementById('registerModal'), {
+                    keyboard: false
+                })
+                this.modalHandler.show()
+            },
+            register: function () {
+                // Send Post /users
+                const email = this.registerEmail
+                const password = this.registerPassword
 
-                methods: {
-                    showRegisterModal: function() {
-                        this.modalHandler = new bootstrap.Modal(document.getElementById('registerModal'),{
-                            keyboard: false
-                        })
-                        this.modalHandler.show()
+                fetch('/users', {
+                    method: 'POST',
+                    headers: {
+                        'Content-Type': 'application/json'
                     },
-                    register: function() {
-                        // Send Post /users
-                        const email = this.registerEmail
-                        const password = this.registerPassword
-
-                        fetch('/users', {
-                            method: 'POST',
-                            headers: {
-                                'Content-Type': 'application/json'
-                            },
-                            body: JSON.stringify({
-                                email,
-                                password
-                            })
-                        }).then(async res => {
-                            return {body: await res.text(), status: res.status}
+                    body: JSON.stringify({
+                        email,
+                        password
+                    })
+                }).then(async res => {
+                    return {body: await res.text(), status: res.status}
                         }).then(res => {
-                            if(res.status > 299) {
-                                return alert ('Error: ' + res.status + ': ' + res.body)
-                            }
-                            alert('User created successfully')
-                            this.modalHandler.hide()
-
-                        })
+                    if (res.status > 299) {
+                        return alert('Error: ' + res.status + ': ' + res.body)
                     }
-                }
-            }).mount('#app')
+                    alert('User created successfully')
+                    this.modalHandler.hide()
 
-        </script>
+                })
+            }
+        }
+    }).mount('#app')
+
+</script>
 <!-- Core theme JS-->
 <script src="https://cdn.jsdelivr.net/npm/bootstrap@5.2.3/dist/js/bootstrap.min.js" integrity="sha384-cuYeSxntonz0PPNlHhBs68uyIAVpIIOZZ5JqeqvYYIcEL727kskC66kF92t6Xl2V" crossorigin="anonymous"></script>
 </body>
