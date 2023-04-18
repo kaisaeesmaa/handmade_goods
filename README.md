@@ -8,9 +8,9 @@ https://www.pivotaltracker.com/n/projects/2634045
 
 ## Project setup
 
-...
+``` 
 cp .env.example .env
-...
+``` 
 
 ``` 
 npm install
