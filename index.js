@@ -9,6 +9,7 @@ const {v4: uuidv4} = require('uuid');
 // Add Swagger UI
 const swaggerUi = require('swagger-ui-express');
 const yamlJs = require('yamljs');
+const {hash} = require("bcrypt");
 const swaggerDocument = yamlJs.load('./swagger.yml');
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 
@@ -16,11 +17,17 @@ app.use(express.static('public'))
 app.use(express.json())
 
 const users = [
-    // {id: 1, email: 'ads@ads.com', password: 'Konnakulles'}
+    {id: 1, email: 'ads@ads.com', password: '$2b$10$wc3PZ2QbJKem05cg5TdJYe8Tv/pwJ/sgMPOJ5Att2flGNYLiA5s7i'} //Konnakulles
 ]
 
 let sessions = [
-    // {id: '123', userId: 1}
+    {id: '123', userId: 1}
+]
+
+const products = [
+    {id: 1, name: 'Product 1', description: 'Product 1 description', price: 100, userId: 1},
+    {id: 2, name: 'Product 2', description: 'Product 2 description', price: 200, userId: 2},
+    {id: 3, name: 'Product 3', description: 'Product 3 description', price: 300, userId: 1}
 ]
 
 function tryToParseJSON(jsonString) {
@@ -137,6 +144,48 @@ function authorizeRequest(req, res, next) {
     next()
 }
 
+app.get('/products', authorizeRequest, (req, res) => {
+    // Get products for user
+    const userProducts = products.filter(product => product.userId === req.user.id)
+
+    // Send products to client
+    res.send(userProducts)
+})
+
+app.post('/products', authorizeRequest, (req, res) => {
+    // Validate name, description and price
+    if (!req.body.name || !req.body.description || !req.body.price) return res.status(400).send('Name, description and price are required')
+
+    // Find max id
+    const maxId = products.reduce((max, product) => product.id > max ? product.id : max, products[0].id)
+
+    // Save product to database
+    products.push({
+        id: maxId + 1,
+        name: req.body.name,
+        description: req.body.description,
+        price: req.body.price,
+        userId: req.user.id
+    })
+
+    // Send product to client
+    res.status(201).send(products[products.length - 1])
+})
+
+app.delete('/products/:id', authorizeRequest, (req, res) => {
+    // Find product
+    const product = products.find(product => product.id === parseInt(req.params.id))
+    if (!product) return res.status(404).send('Product not found')
+
+    // Check that the product belongs to the user
+    if (product.userId !== req.user.id) return res.status(401).send('Unauthorized')
+
+    // Remove product from products array
+    products.filter(product => product.id !== parseInt(req.params.id))
+
+    res.status(204).end()
+})
+
 app.delete('/sessions', authorizeRequest, (req, res) => {
     // Remove session from sessions array
     sessions = sessions.filter(session => session.id !== req.session.id)
@@ -145,7 +194,7 @@ app.delete('/sessions', authorizeRequest, (req, res) => {
 })
 
 app.listen(port, () => {
-    console.log(`Example app listening on port ${port}`)
+    console.log(`Example app listening on port ${port}. Documentation at http://localhost:${port}/docs`)
 })
 
 function verifyEmail(email) {

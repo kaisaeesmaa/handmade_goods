@@ -113,6 +113,30 @@ paths:
         - Bearer: [ ]
       summary: Destroy a Session
       description: 'Destroys a Session, signing the user out. Reads the session ID from Authorization header. '
+  /products:
+    summary: Path used to manage the list of products.
+    description: >-
+      The REST endpoint/path used to list and create zero or more `Product` entities.  This path
+      contains a `GET` and `POST` operation to perform the list and create tasks, respectively.
+    get:
+      tags:
+        - /products
+      responses:
+        '200':
+          content:
+            application/json:
+              schema:
+                type: array
+                items:
+                  $ref: '#/components/schemas/Product'
+          description: Successful response - returns an array of `Product` entities.
+        '401':
+          description: Unauthorized
+      security:
+        - Bearer: [ ]
+      operationId: getProducts
+      summary: List All Products
+      description: Gets a list of all `Product` entities.
 components:
   schemas:
     User:
@@ -162,6 +186,26 @@ components:
       example:
         email: admin
         password: Konnakulles
+    Product:
+      title: Root Type for Product
+      description: ''
+      type: object
+      properties:
+        name:
+          type: string
+        description:
+          type: string
+        price:
+          format: int32
+          type: integer
+        userId:
+          format: int32
+          type: integer
+      example:
+        name: Product 1
+        description: Product 1 description
+        price: 100
+        userId: 1
   securitySchemes:
     Bearer:
       scheme: bearer
@@ -170,4 +214,6 @@ tags:
   - name: /users
     description: ''
   - name: /sessions
+    description: ''
+  - name: /products
     description: ''
