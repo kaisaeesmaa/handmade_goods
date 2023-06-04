@@ -30,7 +30,7 @@
             margin: 10px;
         }
 
-        .delete-button {
+        .edit-button {
             background-color: darkgreen;
             color: white;
             border: none;
@@ -72,7 +72,13 @@
                     {{ product.name }}<br>
                     {{ product.description }}<br>
                     {{ product.price }}<br>
-                    <button class="delete-button" @click="deleteProduct(product.id)">Delete</button>
+                    <button class="edit-button" data-bs-toggle="modal" data-bs-target="#editProductModal"
+                            @click="showModal('editProductModal', product.id)">Edit
+                    </button>
+                    &nbsp
+                    <button class="edit-button" data-bs-toggle="modal" data-bs-target="#deleteProductModal"
+                            @click="deleteProduct(product.id)">Delete
+                    </button>
                     <br>
                 </div>
             </div>
@@ -182,6 +188,51 @@
                 </div>
             </div>
         </div>
+
+        <!-- Edit Product Modal -->
+        <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="editProductModalLabel">Edit Product</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="modal-body">
+                            <div class="mb-3 row">
+                                <label for="editProductName" class="col-sm-2 col-form-label">Product Name</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="editProductName"
+                                           v-model="editProductName">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="editProductDescription" class="col-sm-2 col-form-label">Edit Product
+                                    Description</label>
+                                <div class="col-sm-10">
+                                    <input type="text" class="form-control" id="editProductDescription"
+                                           v-model="editProductDescription">
+                                </div>
+                            </div>
+                            <div class="mb-3 row">
+                                <label for="editProductPrice" class="col-sm-2 col-form-label">Edit Product Price</label>
+                                <div class="col-sm-10">
+                                    <input type="number" class="form-control" id="editProductPrice"
+                                           v-model="editProductPrice">
+                                </div>
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" @click="editProduct(Product.id)">Edit Product
+                        </button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <!-- Bootstrap core JS-->
@@ -212,7 +263,10 @@
                 products: null,
                 addProductName: null,
                 addProductDescription: null,
-                addProductPrice: null
+                addProductPrice: null,
+                editProductName: null,
+                editProductDescription: null,
+                editProductPrice: null
             }
         },
         mounted() {
@@ -226,11 +280,11 @@
             }
         },
         methods: {
-            async getProductsFromLocalStorage() {
+            getProductsFromLocalStorage() {
                 this.products = JSON.parse(localStorage.getItem('products'))
             },
-            getAndCacheProducts() {
-                this.send('GET', '/products').then(response => {
+            async getAndCacheProducts() {
+                await this.send('GET', '/products').then(response => {
                     if (response.ok) {
                         this.products = response.body
                         localStorage.setItem('products', JSON.stringify(response.body))
@@ -238,7 +292,14 @@
                 })
             },
 
-            showModal: function (modalId) {
+            showModal: function (modalId, Id) {
+                if (Id) {
+                    this.Product = this.products.find(Product => Product.id === Id);
+                    this.editProductName = this.products[Id].name
+                    this.editProductDescription = this.products[Id].description
+                    this.editProductPrice = this.products[Id].price
+                }
+
                 this.modalHandler = new bootstrap.Modal(document.getElementById(modalId), {
                     keyboard: false
                 })
@@ -367,7 +428,7 @@
                 const price = this.addProductPrice
                 this.send('POST', '/products', {name, description, price}).then(response => {
                     if (response.ok) {
-                        // this.getAndCacheProducts()
+                        this.getAndCacheProducts()
                         alert('Product added')
                         this.products.push(response.body)
                         this.modalHandler.hide()
@@ -383,7 +444,54 @@
                         this.products = this.products.filter(product => product.id !== productId)
                     }
                 })
+            },
+
+            editProduct: function (productId) {
+
+                // Validate the form
+                if (!this.editProductName || !this.editProductDescription || !this.editProductPrice) {
+                    alert('Please fill all the fields')
+                    return
+                }
+
+                // Validate the description
+                if (this.editProductDescription.length < 10) {
+                    alert('The description must be at least 10 characters long')
+                    return
+                }
+
+                // Validate the description length
+                if (this.editProductDescription.length > 200) {
+                    alert('The description must be at most 200 characters long')
+                    return
+                }
+
+                // Validate the price
+                if (this.editProductPrice <= 0) {
+                    alert('The price must be greater than 0')
+                    return
+                }
+                // Send PUT /products/:id
+                const name = this.editProductName
+                const description = this.editProductDescription
+                const price = this.editProductPrice
+                this.send('PUT', '/products/' + productId, {name, description, price}).then(response => {
+                    if (response.ok) {
+                        this.getAndCacheProducts()
+                        alert('Product updated')
+                        this.products = this.products.map(product => {
+                            if (product.id === productId) {
+                                return response.body
+                            }
+                            return product
+                        })
+                        this.modalHandler.hide()
+                    } else {
+                        alert('Error editing product')
+                    }
+                })
             }
+
         }
     }).mount('#app')
 

@@ -137,6 +137,66 @@ paths:
       operationId: getProducts
       summary: List All Products
       description: Gets a list of all `Product` entities.
+    post:
+      requestBody: { $ref: '#/components/requestBodies/Product' }
+      tags:
+        - /products
+      responses:
+        '201':
+          content:
+            application/json: { }
+          description: Succesful response - Product added
+        '401':
+          content:
+            text/xml:
+              examples:
+                Invalid authorization header:
+                  value: Invalid authorization header
+                Invalid session:
+                  value: Invalid session
+          description: Unauthorized
+      security:
+        - Bearer: [ ]
+      operationId: addProduct
+      summary: A new 'product' to be created
+      description: A new 'product' is created
+  '/products/:id':
+    description: ' The REST endpoint/path used to edit and delete `Product` entities.  This path contains a `PUT` and  `DELETE` operation to perform the edit and delete products, respectively.'
+    put:
+      tags:
+        - /products
+      responses:
+        '400':
+          description: 'Bad request (Name, description and price are required)'
+        '401':
+          description: Unauthorized
+        '404':
+          description: Product ID not found
+      security:
+        - Bearer: [ ]
+      operationId: editProduct
+      summary: Edit Product
+      description: A 'Product' to be edited
+    delete:
+      responses:
+        '204':
+          description: Successful response - delets specific `Product` from array.
+        '401':
+          content:
+            text/xml:
+              examples:
+                Missing authorization header:
+                  value: Missing authorization header
+                Invalid session:
+                  value: Invalid session
+          description: Unauthorized
+        '404':
+          description: Product ID not found in database.
+      security:
+        - Bearer: [ ]
+      operationId: deleteProduct
+      summary: Delete product
+      description: Deletes products from database
 components:
   schemas:
     User:

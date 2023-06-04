@@ -160,13 +160,16 @@ app.post('/products', authorizeRequest, (req, res) => {
     const maxId = products.reduce((max, product) => product.id > max ? product.id : max, products[0].id)
 
     // Save product to database
-    products.push({
+    const product = {
         id: maxId + 1,
         name: req.body.name,
         description: req.body.description,
         price: req.body.price,
         userId: req.user.id
-    })
+    }
+
+    // Add product to product array
+    products.push(product)
 
     // Send product to client
     res.status(201).send(products[products.length - 1])
@@ -184,6 +187,26 @@ app.delete('/products/:id', authorizeRequest, (req, res) => {
     products.filter(product => product.id !== parseInt(req.params.id))
 
     res.status(204).end()
+})
+
+app.put('/products/:id', authorizeRequest, (req, res) => {
+    // Find product
+    const product = products.find(product => product.id === parseInt(req.params.id))
+    if (!product) return res.status(404).send('Product not found')
+
+    // Check that the product belongs to the user
+    if (product.userId !== req.user.id) return res.status(401).send('Unauthorized')
+
+    // Validate name, description and price
+    if (!req.body.name || !req.body.description || !req.body.price) return res.status(400).send('Name, description and price are required')
+
+    // Update product
+    product.name = req.body.name
+    product.description = req.body.description
+    product.price = req.body.price
+
+    // Send product to client
+    res.send(product)
 })
 
 app.delete('/sessions', authorizeRequest, (req, res) => {
