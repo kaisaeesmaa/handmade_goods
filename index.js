@@ -16,11 +16,17 @@ app.use(express.static('public'))
 app.use(express.json())
 
 const users = [
-    // {id: 1, email: 'ads@ads.com', password: 'Konnakulles'}
+    //{id: 1, email: 'ads@ads.com', password: 'Konnakulles'}
+]
+
+const products = [
+    {id: 1, name: 'Product 1', price: 100},
+    {id: 2, name: 'Product 2', price: 200},
+    {id: 3, name: 'Product 3', price: 300},
 ]
 
 let sessions = [
-    // {id: '123', userId: 1}
+    //{id: '123', userId: 1}
 ]
 
 function tryToParseJSON(jsonString) {
@@ -37,15 +43,19 @@ function tryToParseJSON(jsonString) {
 app.post('/users', async (req, res) => {
 
     // Validate email and password
-    if (!req.body.email || !req.body.password) return res.status(400).send('Email and password are required')
-    if (req.body.password.length < 8) return res.status(400).send('Password must be at least 8 characters long')
-    if (!req.body.email.match(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/)) return res.status(400).send('Email must be in a valid format')
+    if (!req.body.email || !req.body.password)
+        return res.status(400).send('Email and password are required')
+    if (req.body.password.length < 8)
+        return res.status(400).send('Password must be at least 8 characters long')
+    if (!req.body.email.match(/^[+a-zA-Z0-9._-]+@[a-zA-Z0-9.-]+\.[a-zA-Z]{2,24}$/))
+        return res.status(400).send('Email must be in a valid format')
 
     // Check if email is already in use
-    if (users.find(user => user.email === req.body.email)) return res.status(409).send('Email is already in use')
+    if (users.find(user => user.email === req.body.email))
+        return res.status(409).send('Email is already in use')
 
     // Try to contact the mail server and send a test email without actually sending the email
-    try {
+    /*try {
         const result = await verifyEmail(req.body.email);
         if (!result.success) {
             return res.status(400).send('Email is not valid:' + result.info)
@@ -57,7 +67,7 @@ app.post('/users', async (req, res) => {
             return res.status(400).send('Email is not valid: ' + errorObject.info)
         }
         return res.status(400).send('Email is not valid:' + error.code)
-    }
+    }*/
 
     // Hash password
     let hashedPassword
@@ -80,7 +90,8 @@ app.post('/users', async (req, res) => {
 app.post('/sessions', async (req, res) => {
 
     // Validate email and password
-    if (!req.body.email || !req.body.password) return res.status(400).send('Email and password are required')
+    if (!req.body.email || !req.body.password)
+        return res.status(400).send('Email and password are required')
 
     // Find user
     const user = users.find(user => user.email === req.body.email)
@@ -89,7 +100,7 @@ app.post('/sessions', async (req, res) => {
     // Compare password
     try {
         if (await bcrypt.compare(req.body.password, user.password)) {
-            // Passwords match
+
             // create session
             const session = {id: uuidv4(), userId: user.id}
 
@@ -137,7 +148,49 @@ function authorizeRequest(req, res, next) {
     next()
 }
 
+// GET /products
+app.get('/products', authorizeRequest, (req, res) => {
+    // get products for user
+    const productsForUser = products.filter(product => product.userId === req.user.id)
+
+    // send products to client
+    res.send(productsForUser)
+})
+
+// POST /products
+app.post('/products', authorizeRequest, (req, res) => {
+    // validate name and price
+    if (!req.body.name || !req.body.price) return res.status(400).send('Name and price are required')
+    if (req.body.price < 0) return res.status(400).send('Price must be a positive number')
+
+    // find max id
+    const maxId = products.reduce((max, product) => product.id > max ? product.id : max, 0)
+
+    // save product to database
+    products.push({id: maxId + 1, name: req.body.name, price: req.body.price, userId: req.user.id})
+
+    // send product to client
+    res.status(201).end()
+})
+
+// DELETE /products/:id
+app.delete('/products/:id', authorizeRequest, (req, res) => {
+    // find product
+    const product = products.find(product => product.id === parseInt(req.params.id))
+    if (!product) return res.status(404).send('Product not found')
+
+    // check that product belongs to user
+    if (product.userId !== req.user.id) return res.status(403).send('Product does not belong to user')
+
+    // remove product from products array
+    products.splice(products.indexOf(product), 1)
+
+    res.status(204).end()
+})
+
+// DELETE /sessions
 app.delete('/sessions', authorizeRequest, (req, res) => {
+
     // Remove session from sessions array
     sessions = sessions.filter(session => session.id !== req.session.id)
 
