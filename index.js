@@ -16,11 +16,17 @@ app.use(express.static('public'))
 app.use(express.json())
 
 const users = [
-    // {id: 1, email: 'ads@ads.com', password: 'Konnakulles'}
+    {id: 1, email: 'ads@ads.com', password: '$2b$10$EvcXbnHTf2jRatLGWYx8GOCAs8pR1ThB7PRpmP9m5AfQphtqY/BRq\n'}
 ]
 
 let sessions = [
-    // {id: '123', userId: 1}
+    {id: '123', userId: 1}
+]
+
+const products = [
+    {id: 1, name: 'Product 1', description: 'Description 1', price: 100, userId: 1},
+    {id: 2, name: 'Product 2', description: 'Description 2', price: 200, userId: 1},
+    {id: 3, name: 'Product 3', description: 'Description 3', price: 300, userId: 2},
 ]
 
 function tryToParseJSON(jsonString) {
@@ -45,7 +51,7 @@ app.post('/users', async (req, res) => {
     if (users.find(user => user.email === req.body.email)) return res.status(409).send('Email is already in use')
 
     // Try to contact the mail server and send a test email without actually sending the email
-    try {
+    /*try {
         const result = await verifyEmail(req.body.email);
         if (!result.success) {
             return res.status(400).send('Email is not valid:' + result.info)
@@ -57,12 +63,13 @@ app.post('/users', async (req, res) => {
             return res.status(400).send('Email is not valid: ' + errorObject.info)
         }
         return res.status(400).send('Email is not valid:' + error.code)
-    }
+    }*/
 
     // Hash password
     let hashedPassword
     try {
         hashedPassword = await bcrypt.hash(req.body.password, 10);
+        console.log(hashedPassword)
     } catch (error) {
         console.log(error);
     }
@@ -136,6 +143,31 @@ function authorizeRequest(req, res, next) {
     // Call next middleware
     next()
 }
+
+app.get('/products', authorizeRequest, (req, res) => {
+    const productsForUser = products.filter(product => product.userId === req.user.id)
+    res.send(productsForUser)
+})
+
+app.post('/products', authorizeRequest, (req, res) => {
+    // Validate name and price)
+    if (!req.body.name || !req.body.price) return res.status(400).send('Name and price are required')
+    if (typeof req.body.name !== 'string') return res.status(400).send('Name must be a string')
+    if (typeof req.body.price !== 'number') return res.status(400).send('Price must be a number')
+    if (req.body.price < 0) return res.status(400).send('Price must be a positive number')
+
+    // find max id
+    const maxId = products.reduce((max, product) => product.id > max ? product.id : max, 0)
+
+    // save product to database
+    const product = {id: maxId + 1, name: req.body.name, description: req.body.description, price: req.body.price}
+
+    // add product to products array
+    products.push(product)
+
+    // send product to client
+    res.status(201).send(product[products.length - 1]);
+})
 
 app.delete('/sessions', authorizeRequest, (req, res) => {
     // Remove session from sessions array

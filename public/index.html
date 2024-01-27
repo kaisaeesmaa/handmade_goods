@@ -16,6 +16,34 @@
     <link rel="icon" type="image/png" sizes="32x32" href="/icons/favicon-32x32.png">
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
     <link rel="manifest" href="/icons/site.webmanifest">
+    <style>
+        .product-card {
+            border: 1px solid #ccc;
+            border-radius: 5px;
+            padding: 10px;
+            margin: 10px;
+        }
+
+        .product-name-row {
+            margin-bottom: 10px;
+        }
+
+        .product-name {
+            font-size: 20px;
+        }
+
+        .product-content-row {
+            margin-bottom: 10px;
+        }
+
+        .product-description {
+            font-size: 16px;
+        }
+
+        .product-buttons-row {
+            margin-bottom: 10px;
+        }
+    </style>
 
 </head>
 <body>
@@ -39,9 +67,22 @@
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" v-if="sessionId" @click="signOut">
                     Sign Out
                 </button>
+                &nbsp
+                <button type="button" class="btn btn-primary" data-bs-toggle="modal" v-if="sessionId"
+                        @click="showModal('addProductModal')">
+                    Add Product
+                </button>
             </div>
         </div>
 
+        <!-- List of Products -->
+        <div id="product-list">
+            <div v-for="product in products" class="product-card">
+               {{ product.name }} <br>
+               {{ product.description }} <br>
+               {{ product.price }} <br>
+            </div>
+        </div>
 
         <!-- Sign Up Modal -->
         <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="signUpModalLabel"
@@ -105,8 +146,47 @@
                     </div>
                 </div>
             </div>
-
         </div>
+
+        <!-- Add Product Modal -->
+        <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
+             aria-hidden="true">
+            <div class="modal-dialog">
+                <div class="modal-content">
+                    <div class="modal-header">
+                        <h1 class="modal-title fs-5" id="addProductModalLabel">Add Product</h1>
+                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Add Product"></button>
+                    </div>
+                    <div class="modal-body">
+                        <div class="mb-3 row">
+                            <label for="addProductName" class="col-sm-10 col-form-label">Name</label>
+                            <div class="col-sm-10">
+                                <input type="text" class="form-control" id="addProductName" v-model="addProductName">
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label for="addDescription" class="col-sm-10 col-form-label">Description</label>
+                            <div class="col-sm-10">
+                                <textarea class="form-control" id="addDescription"
+                                       v-model="addDescription"></textarea>
+                            </div>
+                        </div>
+                        <div class="mb-3 row">
+                            <label for="addPrice" class="col-sm-2 col-form-label">Price</label>
+                            <div class="col-sm-8">
+                                <input type="number" class="form-control" id="addPrice"
+                                       v-model="addPrice">
+                            </div>
+                        </div>
+                    </div>
+                    <div class="modal-footer">
+                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                        <button type="button" class="btn btn-primary" @click="AddProduct">Add Product</button>
+                    </div>
+                </div>
+            </div>
+        </div>
+
     </div>
 </div>
 <!-- Bootstrap core JS-->
@@ -125,7 +205,7 @@
         return false
     }
 
-    Vue.createApp({
+    const vue = Vue.createApp({
         data() {
             return {
                 modalHandler: null,
@@ -133,21 +213,39 @@
                 signUpPassword: null,
                 signInEmail: null,
                 signInPassword: null,
-                sessionId: null
+                sessionId: null,
+                addProductName: null,
+                addDescription: null,
+                addPrice: null,
+                products: null,
             }
         },
-        mounted() {
+        async mounted() {
             // Check if the user is already logged in from local storage
-            this.sessionId = localStorage.getItem('sessionId')
+            this.sessionId = localStorage.getProducts('sessionId')
+            if (this.sessionId) {
+                // Get the products
+                this.getProducts()
+            }
 
         },
         methods: {
 
+            getProducts() {
+                // Send GET /products
+                this.send('GET', '/products').then((response) => {
+                    if (response.ok) {
+                        this.products = response.body
+                        this.modalHandler.hide()
+                    }
+                })
+            },
+
             showModal: function (modalId) {
                 this.modalHandler = new bootstrap.Modal(document.getElementById(modalId), {
                     keyboard: false
-                })
-                this.modalHandler.show()
+                });
+                this.modalHandler.show();
             },
 
             send: function (method, url, body) {
@@ -199,6 +297,8 @@
                 if (response.ok) {
                     alert('User created')
                     this.modalHandler.hide()
+                    // Get the products
+                    this.getProducts()
                 }
             },
 
@@ -215,6 +315,9 @@
                     // Sign in the user
                     this.sessionId = response.body.id
                     this.modalHandler.hide()
+
+                    // Get the products
+                    this.getProducts()
                 }
             },
 
@@ -229,6 +332,19 @@
             clearStorageAndResetSessionId: function () {
                 localStorage.removeItem('sessionId')
                 this.sessionId = null
+            },
+
+            AddProduct: async function () {
+                // Send POST /products
+                const name = this.addProductName
+                const description = this.addDescription
+                const price = this.addPrice
+                this.send('POST', '/products', {name, description, price}).then((response) => {
+                    if (response.ok) {
+                        alert('Product added')
+                        this.modalHandler.hide()
+                    }
+                })
             }
         }
     }).mount('#app')
