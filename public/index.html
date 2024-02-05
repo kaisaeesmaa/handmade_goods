@@ -17,32 +17,22 @@
     <link rel="icon" type="image/png" sizes="16x16" href="/icons/favicon-16x16.png">
     <link rel="manifest" href="/icons/site.webmanifest">
     <style>
+        #product-list {
+        display: grid;
+        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+        grid-gap: 1rem;
+        grid-auto-rows: minmax(100px, auto);
+    }
         .product-card {
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
             margin: 10px;
         }
-
-        .product-name-row {
-            margin-bottom: 10px;
+        .product-card:hover {
+            background-color: #eee;
         }
 
-        .product-name {
-            font-size: 20px;
-        }
-
-        .product-content-row {
-            margin-bottom: 10px;
-        }
-
-        .product-description {
-            font-size: 16px;
-        }
-
-        .product-buttons-row {
-            margin-bottom: 10px;
-        }
     </style>
 
 </head>
@@ -67,22 +57,28 @@
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" v-if="sessionId" @click="signOut">
                     Sign Out
                 </button>
-                &nbsp
+                &nbsp;
                 <button type="button" class="btn btn-primary" data-bs-toggle="modal" v-if="sessionId"
                         @click="showModal('addProductModal')">
                     Add Product
                 </button>
             </div>
+            &nbsp;
         </div>
 
         <!-- List of Products -->
         <div id="product-list">
             <div v-for="product in products" class="product-card">
+                <button type="button" class="btn-close" aria-label="Close"
+                        @click="deleteProduct(product.id)">
+                </button>
+                <br>
                {{ product.name }} <br>
                {{ product.description }} <br>
                {{ product.price }} <br>
             </div>
         </div>
+    </div>
 
         <!-- Sign Up Modal -->
         <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="signUpModalLabel"
@@ -181,15 +177,13 @@
                     </div>
                     <div class="modal-footer">
                         <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="AddProduct">Add Product</button>
+                        <button type="button" class="btn btn-primary" @click="addProduct">Add Product</button>
                     </div>
                 </div>
             </div>
         </div>
-
     </div>
-</div>
-<!-- Bootstrap core JS-->
+
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
 <script>
@@ -227,7 +221,6 @@
                 // Get the products
                 this.getProducts()
             }
-
         },
         methods: {
 
@@ -332,9 +325,25 @@
             clearStorageAndResetSessionId: function () {
                 localStorage.removeItem('sessionId')
                 this.sessionId = null
+                this.products = null
             },
 
-            AddProduct: async function () {
+            addProduct: async function () {
+
+                // Validate the form
+                if (!this.addProductName) {
+                    alert('Please enter a name')
+                    return
+                }
+                if (!this.addDescription) {
+                    alert('Please enter a description')
+                    return
+                }
+                if (!this.addPrice) {
+                    alert('Please enter a price')
+                    return
+                }
+
                 // Send POST /products
                 const name = this.addProductName
                 const description = this.addDescription
@@ -342,11 +351,23 @@
                 this.send('POST', '/products', {name, description, price}).then((response) => {
                     if (response.ok) {
                         alert('Product added')
+                        this.products.push(response.body)
                         this.modalHandler.hide()
+                    }
+                })
+            },
+
+            deleteProduct: function (productId) {
+                // Send DELETE /products
+                this.send('DELETE', '/products/' + productId).then((response) => {
+                    if (response.ok) {
+                        alert('Product deleted')
+                        this.products = this.products.filter(product => product.id !== productId)
                     }
                 })
             }
         }
+
     }).mount('#app')
 
 </script>

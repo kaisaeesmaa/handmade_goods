@@ -11,6 +11,7 @@ const swaggerUi = require('swagger-ui-express');
 const yamlJs = require('yamljs');
 const swaggerDocument = yamlJs.load('./swagger.yml');
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
+const expressWs = require('express-ws')(app);
 
 app.use(express.static('public'))
 app.use(express.json())
@@ -69,7 +70,6 @@ app.post('/users', async (req, res) => {
     let hashedPassword
     try {
         hashedPassword = await bcrypt.hash(req.body.password, 10);
-        console.log(hashedPassword)
     } catch (error) {
         console.log(error);
     }
@@ -163,13 +163,31 @@ app.post('/products', authorizeRequest, (req, res) => {
     const product = {id: maxId + 1, name: req.body.name, description: req.body.description, price: req.body.price}
 
     // add product to products array
-    products.push(product)
+    products.push({id: maxId + 1, name: req.body.name, description: req.body.description, price: req.body.price, userId: req.user.id})
 
     // send product to client
     res.status(201).send(product[products.length - 1]);
 })
 
+app.delete('/products/:id', authorizeRequest, (req, res) => {
+    // Find product
+    const product = products.find(product => product.id === parseInt(req.params.id))
+    if (!product) return res.status(404).send('Product not found')
+
+    // Check that the product belongs to the user
+    if (product.userId !== req.user.id) return res.status(401).send('Unauthorized')
+
+    // Remove product from products array
+    products.splice(products.indexOf(product), 1)
+
+    // Send delete event to clients
+    //expressWs.getWss().clients.forEach(client => client.send(JSON.stringify({type: 'delete', id: product.id})));
+
+    res.status(204).end()
+})
+
 app.delete('/sessions', authorizeRequest, (req, res) => {
+
     // Remove session from sessions array
     sessions = sessions.filter(session => session.id !== req.session.id)
 
