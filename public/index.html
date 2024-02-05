@@ -1,10 +1,10 @@
 <!DOCTYPE html>
 <html lang="en">
 <head>
-    <meta charset="utf-8" />
-    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no" />
-    <meta name="description" content="" />
-    <meta name="author" content="" />
+    <meta charset="utf-8"/>
+    <meta name="viewport" content="width=device-width, initial-scale=1, shrink-to-fit=no"/>
+    <meta name="description" content=""/>
+    <meta name="author" content=""/>
     <title>Handmade goods Marketplace</title>
 
     <!-- Core theme CSS (includes Bootstrap)-->
@@ -18,17 +18,19 @@
     <link rel="manifest" href="/icons/site.webmanifest">
     <style>
         #product-list {
-        display: grid;
-        grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
-        grid-gap: 1rem;
-        grid-auto-rows: minmax(100px, auto);
-    }
+            display: grid;
+            grid-template-columns: repeat(auto-fill, minmax(300px, 1fr));
+            grid-gap: 1rem;
+            grid-auto-rows: minmax(100px, auto);
+        }
+
         .product-card {
             border: 1px solid #ccc;
             border-radius: 5px;
             padding: 10px;
             margin: 10px;
         }
+
         .product-card:hover {
             background-color: #eee;
         }
@@ -73,116 +75,158 @@
                         @click="deleteProduct(product.id)">
                 </button>
                 <br>
-               {{ product.name }} <br>
-               {{ product.description }} <br>
-               {{ product.price }} <br>
+                <button type="button" class="btn btn-primary"
+                        data-bs-toggle="modal" @click="showModal('editProductModal', product.id)">Edit
+                </button>
+                <br>
+                {{ product.name }} <br>
+                {{ product.description }} <br>
+                {{ product.price }} <br>
             </div>
         </div>
     </div>
 
-        <!-- Sign Up Modal -->
-        <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="signUpModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="signUpModalLabel">Sign Up</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3 row">
-                            <label for="signUpEmail" class="col-sm-2 col-form-label">Email</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="signUpEmail" v-model="signUpEmail">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="signUpPassword" class="col-sm-2 col-form-label">Password</label>
-                            <div class="col-sm-10">
-                                <input type="password" class="form-control" id="signUpPassword"
-                                       v-model="signUpPassword">
-                            </div>
+    <!-- Sign Up Modal -->
+    <div class="modal fade" id="signUpModal" tabindex="-1" aria-labelledby="signUpModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="signUpModalLabel">Sign Up</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 row">
+                        <label for="signUpEmail" class="col-sm-2 col-form-label">Email</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="signUpEmail" v-model="signUpEmail">
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="signUp">Sign Up</button>
+                    <div class="mb-3 row">
+                        <label for="signUpPassword" class="col-sm-2 col-form-label">Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="signUpPassword"
+                                   v-model="signUpPassword">
+                        </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="signUp">Sign Up</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Sign In Modal -->
-        <div class="modal fade" id="signInModal" tabindex="-1" aria-labelledby="signInModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="signInModalLabel">Sign In</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3 row">
-                            <label for="signInEmail" class="col-sm-2 col-form-label">Email</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="signInEmail" v-model="signInEmail">
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="signInPassword" class="col-sm-2 col-form-label">Password</label>
-                            <div class="col-sm-10">
-                                <input type="password" class="form-control" id="signInPassword"
-                                       v-model="signInPassword">
-                            </div>
+    <!-- Sign In Modal -->
+    <div class="modal fade" id="signInModal" tabindex="-1" aria-labelledby="signInModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="signInModalLabel">Sign In</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Close"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 row">
+                        <label for="signInEmail" class="col-sm-2 col-form-label">Email</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="signInEmail" v-model="signInEmail">
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="signIn">Sign In</button>
+                    <div class="mb-3 row">
+                        <label for="signInPassword" class="col-sm-2 col-form-label">Password</label>
+                        <div class="col-sm-10">
+                            <input type="password" class="form-control" id="signInPassword"
+                                   v-model="signInPassword">
+                        </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="signIn">Sign In</button>
                 </div>
             </div>
         </div>
+    </div>
 
-        <!-- Add Product Modal -->
-        <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
-             aria-hidden="true">
-            <div class="modal-dialog">
-                <div class="modal-content">
-                    <div class="modal-header">
-                        <h1 class="modal-title fs-5" id="addProductModalLabel">Add Product</h1>
-                        <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Add Product"></button>
-                    </div>
-                    <div class="modal-body">
-                        <div class="mb-3 row">
-                            <label for="addProductName" class="col-sm-10 col-form-label">Name</label>
-                            <div class="col-sm-10">
-                                <input type="text" class="form-control" id="addProductName" v-model="addProductName">
-                            </div>
+    <!-- Add Product Modal -->
+    <div class="modal fade" id="addProductModal" tabindex="-1" aria-labelledby="addProductModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="addProductModalLabel">Add Product</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Add Product"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 row">
+                        <label for="addProductName" class="col-sm-10 col-form-label">Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="addProductName" v-model="addProductName">
                         </div>
-                        <div class="mb-3 row">
-                            <label for="addDescription" class="col-sm-10 col-form-label">Description</label>
-                            <div class="col-sm-10">
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="addDescription" class="col-sm-10 col-form-label">Description</label>
+                        <div class="col-sm-10">
                                 <textarea class="form-control" id="addDescription"
-                                       v-model="addDescription"></textarea>
-                            </div>
-                        </div>
-                        <div class="mb-3 row">
-                            <label for="addPrice" class="col-sm-2 col-form-label">Price</label>
-                            <div class="col-sm-8">
-                                <input type="number" class="form-control" id="addPrice"
-                                       v-model="addPrice">
-                            </div>
+                                          v-model="addDescription"></textarea>
                         </div>
                     </div>
-                    <div class="modal-footer">
-                        <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
-                        <button type="button" class="btn btn-primary" @click="addProduct">Add Product</button>
+                    <div class="mb-3 row">
+                        <label for="addPrice" class="col-sm-2 col-form-label">Price</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="addPrice"
+                                   v-model="addPrice">
+                        </div>
                     </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="addProduct">Add Product</button>
                 </div>
             </div>
         </div>
     </div>
+
+    <!-- Edit Product Modal -->
+    <div class="modal fade" id="editProductModal" tabindex="-1" aria-labelledby="editProductModalLabel"
+         aria-hidden="true">
+        <div class="modal-dialog">
+            <div class="modal-content">
+                <div class="modal-header">
+                    <h1 class="modal-title fs-5" id="editProductModalLabel">Edit Product</h1>
+                    <button type="button" class="btn-close" data-bs-dismiss="modal" aria-label="Edit Product"></button>
+                </div>
+                <div class="modal-body">
+                    <div class="mb-3 row">
+                        <label for="editProductName" class="col-sm-10 col-form-label ">Name</label>
+                        <div class="col-sm-10">
+                            <input type="text" class="form-control" id="editProductName" v-model="editProductName ">
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="editDescription" class="col-sm-10 col-form-label">Description</label>
+                        <div class="col-sm-10">
+                            <textarea class="form-control" id="editDescription" v-model="editDescription"></textarea>
+                        </div>
+                    </div>
+                    <div class="mb-3 row">
+                        <label for="editPrice" class="col-sm-2 col-form-label">Price</label>
+                        <div class="col-sm-8">
+                            <input type="number" class="form-control" id="editPrice"
+                                   v-model="editPrice">
+                        </div>
+                    </div>
+                </div>
+                <div class="modal-footer">
+                    <button type="button" class="btn btn-secondary" data-bs-dismiss="modal">Close</button>
+                    <button type="button" class="btn btn-primary" @click="editProduct">Edit Product</button>
+                </div>
+            </div>
+        </div>
+    </div>
+</div>
 
 <script src="https://unpkg.com/vue@3/dist/vue.global.js"></script>
 
@@ -212,6 +256,9 @@
                 addDescription: null,
                 addPrice: null,
                 products: null,
+                editProductName: null,
+                editDescription: null,
+                editPrice: null,
             }
         },
         async mounted() {
@@ -234,7 +281,13 @@
                 })
             },
 
-            showModal: function (modalId) {
+            showModal: function (modalId, Id) {
+                if (Id) {
+                    const product = this.products.find(product => product.id === Id)
+                    this.editProductName = product.name
+                    this.editDescription = product.description
+                    this.editPrice = product.price
+                }
                 this.modalHandler = new bootstrap.Modal(document.getElementById(modalId), {
                     keyboard: false
                 });
@@ -363,6 +416,44 @@
                     if (response.ok) {
                         alert('Product deleted')
                         this.products = this.products.filter(product => product.id !== productId)
+                    }
+                })
+            },
+
+            editProduct: function () {
+                // Validate the form
+                if (!this.editProductName) {
+                    alert('Please enter a name')
+                    return
+                }
+                if (!this.editDescription) {
+                    alert('Please enter a description')
+                    return
+                }
+                if (!this.editPrice) {
+                    alert('Please enter a price')
+                    return
+                }
+
+                // Send PUT /products/:id
+                const name = this.editProductName
+                const description = this.editDescription
+                const price = this.editPrice
+                const productId = this.products.find(product => product.id === Id)
+                this.send('PUT', '/products/' + productId, {name, description, price}).then((response) => {
+                    if (response.ok) {
+                        alert('Product edited')
+                        this.products = this.products.map(product => {
+                            if (product.id === productId) {
+                                return response.body
+                            } else {
+                                return product
+                            }
+                        })
+                        this.modalHandler.hide()
+                    }
+                    else {
+                        alert('Product not edited')
                     }
                 })
             }
