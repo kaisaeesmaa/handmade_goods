@@ -344,6 +344,7 @@
                     alert('User created')
                     this.modalHandler.hide()
                     // Get the products
+                    await this.logIn(email, password)
                     this.getProducts()
                 }
             },
@@ -352,16 +353,18 @@
                 // Send POST /sessions
                 const email = this.signInEmail
                 const password = this.signInPassword
+                await this.logIn(email, password)
+            },
+
+            logIn: async function (email, password) {
+                // Send POST /sessions
                 const response = await this.send('POST', '/sessions', {email, password});
                 if (response.ok) {
-
                     // Store the token in localStorage
                     localStorage.setItem('sessionId', response.body.id)
-
                     // Sign in the user
                     this.sessionId = response.body.id
                     this.modalHandler.hide()
-
                     // Get the products
                     this.getProducts()
                 }

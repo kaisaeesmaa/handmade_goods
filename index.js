@@ -150,25 +150,30 @@ app.get('/products', authorizeRequest, (req, res) => {
     res.send(productsForUser)
 })
 
-app.post('/products', authorizeRequest, (req, res) => {
-    // Validate name and price)
-    if (!req.body.name || !req.body.price) return res.status(400).send('Name and price are required')
-    if (typeof req.body.name !== 'string') return res.status(400).send('Name must be a string')
-    if (typeof req.body.price !== 'number') return res.status(400).send('Price must be a number')
-    if (req.body.price < 0) return res.status(400).send('Price must be a positive number')
+app.post('/products',
+    authorizeRequest,
+    (req, res) => {
+        // Validate name and price)
+        if (!req.body.name || !req.body.price) return res.status(400).send('Name and price are required')
+        if (typeof req.body.name !== 'string') return res.status(400).send('Name must be a string')
+        if (typeof req.body.price !== 'number') return res.status(400).send('Price must be a number')
+        if (req.body.price < 0) return res.status(400).send('Price must be a positive number')
 
-    // find max id
-    const maxId = products.reduce((max, product) => product.id > max ? product.id : max, 0)
+        // find max id
+        const maxId = products.reduce((max, product) => product.id > max ? product.id : max, products[0].id)
 
-    // save product to database
-    const product = {id: maxId + 1, name: req.body.name, description: req.body.description, price: req.body.price}
+        // save product to database
+        products.push({
+            id: maxId + 1,
+            name: req.body.name,
+            description: req.body.description,
+            price: req.body.price,
+            userId: req.user.id
+        })
 
-    // add product to products array
-    products.push({id: maxId + 1, name: req.body.name, description: req.body.description, price: req.body.price, userId: req.user.id})
-
-    // send product to client
-    res.status(201).send(product[products.length - 1]);
-})
+        // send product to client using temporary array
+        res.status(201).send(products[products.length - 1]);
+    })
 
 app.put('/products/:id', authorizeRequest, (req, res) => {
 
