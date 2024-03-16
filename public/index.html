@@ -277,7 +277,6 @@
                 this.send('GET', '/products').then((response) => {
                     if (response.ok) {
                         this.products = response.body
-                        this.modalHandler.hide()
                     }
                 })
             },

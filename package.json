@@ -11,14 +11,18 @@
   "license": "ISC",
   "dependencies": {
     "@gradeup/email-verify": "^0.2.4",
-    "email-domain-verifier": "^1.0.6",
     "bcrypt": "^5.1.0",
     "dotenv": "^16.0.3",
+    "email-domain-verifier": "^1.0.6",
     "express": "^4.18.2",
     "express-ws": "^5.0.2",
+    "js-yaml": "^4.1.0",
     "nodemon": "^3.0.2",
-    "swagger-ui-express": "^4.6.2",
+    "swagger-ui-express": "*",
     "uuid": "^9.0.0",
     "yamljs": "^0.3.0"
+  },
+  "devDependencies": {
+    "opn": "^6.0.0"
   }
 }

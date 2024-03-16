@@ -10,6 +10,7 @@ const {verifyEmailDomain} = require('email-domain-verifier');
 // Add Swagger UI
 const swaggerUi = require('swagger-ui-express');
 const yamlJs = require('yamljs');
+const opn = require("opn");
 const swaggerDocument = yamlJs.load('./swagger.yml');
 app.use('/docs', swaggerUi.serve, swaggerUi.setup(swaggerDocument));
 const expressWs = require('express-ws')(app);
@@ -223,6 +224,9 @@ app.delete('/sessions', authorizeRequest, (req, res) => {
 
 app.listen(port, () => {
     console.log(`Example app listening on port ${port}`)
+    //opn('http://localhost:4000');
+    console.log('http://localhost:4000');
+    console.log('http://localhost:4000/docs');
 })
 
 function verifyEmail(email) {
